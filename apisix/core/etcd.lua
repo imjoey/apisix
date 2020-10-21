@@ -238,7 +238,7 @@ function _M.atomic_set(key, value, ttl, mod_revision)
 end
 
 
-function _M.push(key, value, ttl)
+function _M.push(key, value, ttl, index)
     local etcd_cli, prefix, err = new()
     if not etcd_cli then
         return nil, err
@@ -249,9 +249,12 @@ function _M.push(key, value, ttl)
         return nil, err
     end
 
-    -- manually add suffix
-    local index = res.body.header.revision
-    index = string.format("%020d", index)
+    local index = index
+    if not index then
+        -- manually add suffix
+        index = res.body.header.revision
+        index = string.format("%020d", index)
+    end
 
     res, err = set(key .. "/" .. index, value, ttl)
     if not res then

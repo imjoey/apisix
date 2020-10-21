@@ -103,7 +103,19 @@ end
 
 
 function _M.post(consumer_name, conf)
-    return 405, {error_msg = "not supported `POST` method for consumer"}
+    local consumer_name, err = check_conf(consumer_name, conf)
+    if not consumer_name then
+        return 400, err
+    end
+
+    local key = "/consumers"
+    local res, err = core.etcd.push(key, conf, nil, consumer_name)
+    if not res then
+        core.log.error("failed to post consumer[", key, "]: ", err)
+        return 500, {error_msg = err}
+    end
+
+    return res.status, res.body
 end
 
 
